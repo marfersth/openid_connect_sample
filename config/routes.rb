@@ -1,4 +1,13 @@
 ConnectOp::Application.routes.draw do
+  devise_for :users, :controllers => {:confirmations => 'confirmations'},
+             :skip => [:sessions]
+
+  devise_scope :user do
+    put 'user/confirm' => 'confirmations#confirm'
+  end
+
+  resource :user, only: :create
+
   resource :session,   only: :destroy
   resource :dashboard, only: :show
 
@@ -14,7 +23,7 @@ ConnectOp::Application.routes.draw do
 
   root to: 'top#index'
 
-  match '.well-known/:id', to: 'discovery#show'
+  match '.well-known/:id', to: 'discovery#show', :via => [:get, :post]
   match 'user_info',        to: 'user_info#show', :via => [:get, :post]
 
   post 'access_tokens', to: proc { |env| TokenEndpoint.new.call(env) }

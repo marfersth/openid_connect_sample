@@ -6,7 +6,7 @@ class ClientsController < ApplicationController
   end
 
   def create
-    @client = current_account.clients.new params[:client]
+    @client = current_account.clients.new client_params
     if @client.save
       redirect_to dashboard_url, flash: {
         notice: "Registered #{@client.name}"
@@ -23,7 +23,7 @@ class ClientsController < ApplicationController
 
   def update
     @client = current_account.clients.find(params[:id])
-    if @client.update_attributes(params[:client])
+    if @client.update_attributes(client_params)
       redirect_to dashboard_url, flash: {
         notice: "Updated #{@client.name}"
       }
@@ -36,5 +36,11 @@ class ClientsController < ApplicationController
   def destroy
     current_account.clients.find(params[:id]).destroy
     redirect_to dashboard_url
+  end
+
+  private
+
+  def client_params
+    params.require(:client).permit(:name, :redirect_uri)
   end
 end

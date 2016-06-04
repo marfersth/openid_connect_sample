@@ -2,6 +2,7 @@ class Account < ActiveRecord::Base
   has_one :facebook, class_name: 'Connect::Facebook'
   has_one :google,   class_name: 'Connect::Google'
   has_one :fake,     class_name: 'Connect::Fake'
+  has_one :user,     class_name: 'User'
   has_many :clients
   has_many :access_tokens
   has_many :authorizations
@@ -13,7 +14,7 @@ class Account < ActiveRecord::Base
   validates :identifier, presence: true, uniqueness: true
 
   def to_response_object(access_token)
-    userinfo = (google || facebook || fake).userinfo
+    userinfo = (google || facebook || fake || user).userinfo
     unless access_token.accessible?(Scope::PROFILE)
       userinfo.all_attributes.each do |attribute|
         userinfo.send("#{attribute}=", nil) unless access_token.accessible?(attribute)
@@ -31,7 +32,7 @@ class Account < ActiveRecord::Base
   end
 
   def ppid_for(sector_identifier)
-    self.pairwise_pseudonymous_identifiers.find_or_create_by_sector_identifier! sector_identifier
+    self.pairwise_pseudonymous_identifiers.find_or_create_by!(sector_identifier: sector_identifier)
   end
 
   private
