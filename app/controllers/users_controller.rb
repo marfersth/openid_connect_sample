@@ -2,8 +2,9 @@ class UsersController < ApplicationController
   before_filter :require_anonymous_access
 
   def create
-    valid = (user = User.find_by_email(user_params[:email])).try(:valid_password?, user_params[:password])
+    valid = User.authenticate(user_params[:email], user_params[:password])
     raise AuthenticationRequired.new unless valid
+    user = User.find_by_email(user_params[:email])
     authenticate user.authenticate
     logged_in!
   end

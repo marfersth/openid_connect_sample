@@ -6,6 +6,7 @@ class Client < ActiveRecord::Base
   belongs_to :account
   has_many :access_tokens
   has_many :authorizations
+  has_many :refresh_tokens
 
   before_validation :setup, on: :create
 

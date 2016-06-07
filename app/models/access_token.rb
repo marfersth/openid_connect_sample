@@ -1,26 +1,24 @@
 class AccessToken < ActiveRecord::Base
-  belongs_to :account
-  belongs_to :client
+  include Oauth2Token
+  self.default_lifetime = 15.minutes
+  belongs_to :refresh_token
   has_many :access_token_scopes
   has_many :scopes, through: :access_token_scopes
   has_one :access_token_request_object
   has_one :request_object, through: :access_token_request_object
 
-  before_validation :setup, on: :create
-
-  validates :client,     presence: true
-  validates :token,      presence: true, uniqueness: true
-  validates :expires_at, presence: true
-
-  scope :valid, lambda {
-    where { expires_at >= Time.now.utc }
-  }
-
-  def to_bearer_token
-    Rack::OAuth2::AccessToken::Bearer.new(
-      access_token: token,
-      expires_in: (expires_at - Time.now.utc).to_i
+  def to_bearer_token(with_refresh_token = false)
+    bearer_token = Rack::OAuth2::AccessToken::Bearer.new(
+        :access_token => self.token,
+        :expires_in => self.expires_in
     )
+    if with_refresh_token
+      bearer_token.refresh_token = self.create_refresh_token(
+          :account => self.account,
+          :client => self.client
+      ).token
+    end
+    bearer_token
   end
 
   def accessible?(_scopes_or_claims_ = nil)
@@ -38,7 +36,11 @@ class AccessToken < ActiveRecord::Base
   private
 
   def setup
-    self.token      = SecureRandom.hex(32)
-    self.expires_at = 24.hours.from_now
+    super
+    if refresh_token
+      self.account = refresh_token.account
+      self.client = refresh_token.client
+      self.expires_at = [self.expires_at, refresh_token.expires_at].min
+    end
   end
 end
