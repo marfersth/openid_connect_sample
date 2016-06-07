@@ -1,6 +1,5 @@
 ConnectOp::Application.routes.draw do
-  devise_for :users, :controllers => {:confirmations => 'confirmations'},
-             :skip => [:sessions]
+  devise_for :users, :controllers => {confirmations: 'confirmations', sessions: 'sessions'}
 
   devise_scope :user do
     put 'user/confirm' => 'confirmations#confirm'
@@ -8,7 +7,6 @@ ConnectOp::Application.routes.draw do
 
   resource :user, only: :create
 
-  resource :session,   only: :destroy
   resource :dashboard, only: :show
 
   resources :clients, except: :show

@@ -1,5 +1,5 @@
 development: &defaults
-  issuer: http://localhost:3000
+  issuer: http://localhost:3001
 
 test:
   <<: *defaults

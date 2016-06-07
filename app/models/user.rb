@@ -21,7 +21,7 @@ class User < ActiveRecord::Base
     User.find_by_email(email).try(:valid_password?, password)
   end
 
-  def authenticate
+  def create_account
     Account.create!(user: self)
   end
 end

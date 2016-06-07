@@ -20,7 +20,7 @@ module Authentication
     end
 
     def authenticated?
-      !current_account.blank?
+      !current_account.blank? && !current_user.blank?
     end
   end
 
@@ -86,6 +86,8 @@ module Authentication
 
   def unauthenticate!
     @current_account = session[:current_account] = nil
+    # devise destroy action
+    Devise.sign_out_all_scopes ? sign_out : sign_out(resource_name)
   end
 
   def logged_in!
